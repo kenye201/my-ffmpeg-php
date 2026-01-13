@@ -1,22 +1,26 @@
-name: Build Image
-on: [push] # 只要你一点保存，GitHub 就开始帮你做镜像
+name: Build and Push Image
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions: # 显式声明权限
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
+          # 确保这里的名字全小写，否则 GitHub 会报错
           tags: ghcr.io/${{ github.repository_owner }}/my-ffmpeg-php:latest
